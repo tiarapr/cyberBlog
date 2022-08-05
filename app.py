@@ -87,7 +87,7 @@ def main():
         st.image("images/protect.png")
 
     # Menu
-    menu = ["Home", "View Articles", "Add Articles", "Update Articles", "Manage Blog"]
+    menu = ["Home", "Read Articles", "Add Articles", "Update Articles", "Manage Blog"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Home":
@@ -102,9 +102,9 @@ def main():
             b_post_date = i[2]
             st.markdown(home_temp.format(b_title, b_author, b_post_date), unsafe_allow_html=True)
 
-    elif choice == "View Articles":
+    elif choice == "Read Articles":
         all_titles = [i[0] for i in view_all_titles()]
-        postList = st.sidebar.selectbox("View Articles by title", all_titles)
+        postList = st.sidebar.selectbox("Read Articles by title", all_titles)
 
         post_result = get_blog_by_title(postList)
         for i in post_result:
