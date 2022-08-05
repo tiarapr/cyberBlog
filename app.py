@@ -39,6 +39,11 @@ def get_blog_by_title(title):
 def delete_data(title):
     c.execute('DELETE FROM cyberBlog WHERE title="{}"'.format(title))
     conn.commit()
+def update_article(update_blog_title, update_blog_article, update_blog_author, update_blog_post_date, title, article, author, postdate):
+    c.execute("UPDATE cyberBlog SET title=?, article=?, author=?, postdate=? WHERE title=? and article=? and author=? and postdate=? ", (update_blog_title, update_blog_article, update_blog_author, update_blog_post_date, title, article, author, postdate))
+    conn.commit()
+    data = c.fetchall()
+    return data
 
 # Layout Templates Home
 home_temp = """
@@ -82,7 +87,7 @@ def main():
         st.image("images/protect.png")
 
     # Menu
-    menu = ["Home", "View Articles", "Add Articles", "Manage Blog"]
+    menu = ["Home", "View Articles", "Add Articles", "Update Articles", "Manage Blog"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Home":
@@ -118,23 +123,48 @@ def main():
         blog_author = st.text_input("Author", max_chars=50)
         blog_post_date = st.date_input("Date")
 
-        if st.button("Add"):
+        if st.button("Add Article"):
             add_data(blog_title, blog_article, blog_author, blog_post_date)
             st.success("Post: {} saved".format(blog_title))
+    
+    elif choice == "Update Articles":
+        st.markdown("<h3 style='margin-top:20px'>Update Articles</h3>", unsafe_allow_html=True)
+
+        titles = [i[0] for i in view_all_titles()]
+        update_blog_by_title = st.sidebar.selectbox("Title", titles)
+        selected_result = get_blog_by_title(update_blog_by_title)
+        
+        if selected_result:
+            title = selected_result[0][0]
+            article = selected_result[0][1]
+            author = selected_result[0][2]
+            postdate = selected_result[0][3]
+
+            update_blog_title = st.text_input("Title", title, max_chars=50)
+            update_blog_article = st.text_area("Article", article, height=200, max_chars=10000)
+            update_blog_author = st.text_input("Author", author, max_chars=50)
+            update_blog_post_date = st.date_input(postdate)
+
+            if st.button("Update Article"):
+                update_article(update_blog_title, update_blog_article, update_blog_author, update_blog_post_date, title, article, author, postdate)
+                st.success("Post: {} updated To: {}".format(title, update_blog_title))
 
     elif choice == "Manage Blog":
         st.markdown("<h3 style='margin-top:20px'>Manage Articles</h3>", unsafe_allow_html=True)
 
         result = view_all_notes()
-        clean_db = pd.DataFrame(result, columns=["Title", "Articles", "Author", "Post Date"])
-        st.dataframe(clean_db)
-        
-        all_titles = [i[0] for i in view_all_titles()]
-        delete_blog_by_title = st.selectbox("Delete by title", all_titles)
 
-        if st.button("Delete"):
-            delete_data(delete_blog_by_title)
-            st.warning("Deleted: '{}'".format(delete_blog_by_title))
+        with st.expander("View All Data"):
+            clean_db = pd.DataFrame(result, columns=["Title", "Articles", "Author", "Post Date"])
+            st.dataframe(clean_db)
+            
+        with st.expander("Delete by title"):
+            all_titles = [i[0] for i in view_all_titles()]
+            delete_blog_by_title = st.selectbox("Title", all_titles)
+
+            if st.button("Delete"):
+                delete_data(delete_blog_by_title)
+                st.warning("Deleted: '{}'".format(delete_blog_by_title))
 
 if __name__=='__main__':
     main()
